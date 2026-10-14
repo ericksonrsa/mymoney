@@ -24,25 +24,60 @@ A autenticação da API foi implementada no backend com Django REST Framework e 
 | POST | `/api/auth/token/refresh/` | Não | Renova o access token |
 | GET | `/api/auth/me/` | Bearer JWT | Retorna o usuário autenticado |
 
-### Fluxo
-
-1. O frontend envia usuário e senha para `/api/auth/login/`.
-2. Django valida as credenciais usando o sistema de autenticação nativo.
-3. O servidor retorna um access token e um refresh token.
-4. O frontend envia `Authorization: Bearer <access_token>` nas APIs protegidas.
-5. Quando o access token expira, o frontend usa `/api/auth/token/refresh/` para obter outro.
-6. O endpoint `/api/auth/me/` usa `request.user` e exige `IsAuthenticated`.
-
 ### Segurança
 
-- Senhas são armazenadas pelo Django usando seu mecanismo de hashing; nunca são persistidas em texto puro.
-- `DJANGO_SECRET_KEY`, senha do PostgreSQL e demais credenciais devem ser fornecidos por variáveis de ambiente.
-- `.env` está no `.gitignore` e somente `.env.example` é versionado.
+- Senhas são armazenadas pelo Django usando hashing; nunca são persistidas em texto puro.
+- Segredos e credenciais são fornecidos por variáveis de ambiente.
 - Access token padrão: 15 minutos.
 - Refresh token padrão: 7 dias.
-- Rotação e blacklist de refresh tokens estão habilitadas.
-- CORS permite explicitamente as origens configuradas em `CORS_ALLOWED_ORIGINS`.
-- A API usa `IsAuthenticated` como permissão padrão; endpoints públicos de login/registro/refresh fazem override explícito.
+- Rotação e blacklist de refresh tokens habilitadas.
+- CORS permite explicitamente as origens configuradas.
+- `IsAuthenticated` é a permissão padrão da API.
+
+## Sprint de Gestão Financeira
+
+Implementada a primeira camada funcional de gestão financeira, com isolamento completo por usuário.
+
+### Modelos
+
+- `Account`: contas bancárias, poupança, cartão, dinheiro e investimentos.
+- `Category`: categorias de receitas e despesas.
+- `Transaction`: receitas, despesas e transferências entre contas.
+- IDs financeiros usam UUID.
+- Índices por usuário/data e usuário/tipo foram adicionados para consultas frequentes.
+- Restrições de unicidade impedem contas e categorias duplicadas dentro do mesmo usuário.
+
+### API
+
+| Método | Endpoint | Finalidade |
+|---|---|---|
+| GET/POST | `/api/finance/accounts/` | Listar/criar contas |
+| GET/PUT/PATCH/DELETE | `/api/finance/accounts/<uuid>/` | Gerenciar conta |
+| GET/POST | `/api/finance/categories/` | Listar/criar categorias |
+| GET/PUT/PATCH/DELETE | `/api/finance/categories/<uuid>/` | Gerenciar categoria |
+| GET/POST | `/api/finance/transactions/` | Listar/criar transações |
+| GET/PUT/PATCH/DELETE | `/api/finance/transactions/<uuid>/` | Gerenciar transação |
+| GET | `/api/finance/dashboard/` | Resumo financeiro do usuário |
+
+### Regras de segurança e negócio
+
+- Todas as consultas financeiras são filtradas por `request.user`.
+- Uma transação não pode utilizar conta ou categoria de outro usuário.
+- Transferências exigem conta de destino diferente da origem.
+- Receitas e despesas exigem categoria do tipo correspondente.
+- Transferências não utilizam categoria.
+- O dashboard agrega somente dados do usuário autenticado.
+
+### Frontend
+
+O React/Vite agora possui:
+
+- Dashboard financeiro protegido por JWT.
+- Cards de saldo, receitas, despesas e quantidade de transações.
+- Listagem de contas.
+- Listagem das últimas transações.
+- Formulários de criação de conta, categoria e transação.
+- Renovação automática do access token.
 
 ### Configuração local
 
@@ -56,11 +91,21 @@ python manage.py migrate
 python manage.py runserver
 ```
 
+Em outro terminal:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Configure `VITE_API_URL` no frontend quando a API não estiver em `http://localhost:8000/api`.
+
 Não coloque valores reais de produção no repositório. Copie `.env.example` para `.env` e configure os segredos localmente.
 
 ### Testes
 
 ```bash
 cd backend
-python manage.py test accounts
+python manage.py test accounts finance
 ```
