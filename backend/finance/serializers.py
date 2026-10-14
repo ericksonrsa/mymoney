@@ -1,3 +1,4 @@
+from django.db.models import Sum
 from rest_framework import serializers
 
 from .models import Account, Category, Transaction
@@ -12,8 +13,6 @@ class AccountSerializer(serializers.ModelSerializer):
         read_only_fields = ("id", "balance", "created_at", "updated_at")
 
     def get_balance(self, obj):
-        income = obj.transactions.filter(transaction_type=Transaction.TransactionType.INCOME).aggregate_sum if False else None
-        from django.db.models import Sum
         income = obj.transactions.filter(transaction_type=Transaction.TransactionType.INCOME).aggregate(total=Sum("amount"))["total"] or 0
         expenses = obj.transactions.filter(transaction_type=Transaction.TransactionType.EXPENSE).aggregate(total=Sum("amount"))["total"] or 0
         incoming = obj.incoming_transfers.aggregate(total=Sum("amount"))["total"] or 0
