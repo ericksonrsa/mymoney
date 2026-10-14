@@ -1,4 +1,3 @@
-from django.contrib.auth import authenticate
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
@@ -25,6 +24,7 @@ class RegisterSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=150)
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True, min_length=8, trim_whitespace=False)
+    password_confirm = serializers.CharField(write_only=True, min_length=8, trim_whitespace=False)
     first_name = serializers.CharField(max_length=150, required=False, allow_blank=True)
     last_name = serializers.CharField(max_length=150, required=False, allow_blank=True)
 
@@ -40,7 +40,12 @@ class RegisterSerializer(serializers.Serializer):
             raise serializers.ValidationError("E-mail já cadastrado.")
         return value
 
+    def validate(self, attrs):
+        if attrs["password"] != attrs["password_confirm"]:
+            raise serializers.ValidationError({"password_confirm": "As senhas não coincidem."})
+        return attrs
+
     def create(self, validated_data):
         from django.contrib.auth import get_user_model
-        user_model = get_user_model()
-        return user_model.objects.create_user(**validated_data)
+        validated_data.pop("password_confirm")
+        return get_user_model().objects.create_user(**validated_data)
