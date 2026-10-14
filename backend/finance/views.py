@@ -1,3 +1,5 @@
+from datetime import date, timedelta
+
 from django.db.models import Q, Sum
 from rest_framework import generics, permissions
 from rest_framework.response import Response
@@ -81,16 +83,64 @@ class DashboardView(APIView):
     def get(self, request):
         user = request.user
         transactions = Transaction.objects.filter(user=user)
-        income = transactions.filter(transaction_type=Transaction.TransactionType.INCOME).aggregate(total=Sum("amount"))["total"] or 0
-        expenses = transactions.filter(transaction_type=Transaction.TransactionType.EXPENSE).aggregate(total=Sum("amount"))["total"] or 0
-        transfers = transactions.filter(transaction_type=Transaction.TransactionType.TRANSFER).aggregate(total=Sum("amount"))["total"] or 0
+        today = date.today()
+        date_from = request.query_params.get("date_from")
+        date_to = request.query_params.get("date_to")
+        try:
+            start = date.fromisoformat(date_from) if date_from else today.replace(day=1)
+        except ValueError:
+            start = today.replace(day=1)
+        try:
+            end = date.fromisoformat(date_to) if date_to else today
+        except ValueError:
+            end = today
+        if start > end:
+            start, end = end, start
+
+        period_transactions = transactions.filter(transaction_date__range=(start, end))
+        income = period_transactions.filter(transaction_type=Transaction.TransactionType.INCOME).aggregate(total=Sum("amount"))["total"] or 0
+        expenses = period_transactions.filter(transaction_type=Transaction.TransactionType.EXPENSE).aggregate(total=Sum("amount"))["total"] or 0
+        transfers = period_transactions.filter(transaction_type=Transaction.TransactionType.TRANSFER).aggregate(total=Sum("amount"))["total"] or 0
         opening = Account.objects.filter(user=user, is_active=True).aggregate(total=Sum("opening_balance"))["total"] or 0
+
+        category_rows = period_transactions.filter(transaction_type=Transaction.TransactionType.EXPENSE).values("category__name").annotate(total=Sum("amount")).order_by("-total")[:8]
+        category_expenses = [{"category": row["category__name"] or "Sem categoria", "amount": float(row["total"])} for row in category_rows]
+
+        monthly_rows = period_transactions.values("transaction_date__year", "transaction_date__month").annotate(
+            income=Sum("amount", filter=Q(transaction_type=Transaction.TransactionType.INCOME)),
+            expenses=Sum("amount", filter=Q(transaction_type=Transaction.TransactionType.EXPENSE)),
+        ).order_by("transaction_date__year", "transaction_date__month")
+        cash_flow = [{
+            "month": f"{row['transaction_date__year']}-{row['transaction_date__month']:02d}",
+            "income": float(row["income"] or 0),
+            "expenses": float(row["expenses"] or 0),
+            "net": float((row["income"] or 0) - (row["expenses"] or 0)),
+        } for row in monthly_rows]
+
+        months = []
+        cursor = start.replace(day=1)
+        while cursor <= end.replace(day=1):
+            months.append(cursor)
+            cursor = (cursor.replace(day=28) + timedelta(days=4)).replace(day=1)
+        monthly_map = {item["month"]: item for item in cash_flow}
+        running = float(opening)
+        net_worth = []
+        for month in months:
+            key = f"{month.year}-{month.month:02d}"
+            item = monthly_map.get(key, {"income": 0, "expenses": 0})
+            running += item["income"] - item["expenses"]
+            net_worth.append({"month": key, "value": round(running, 2)})
+
         return Response({
-            "balance": opening + income - expenses,
-            "income": income,
-            "expenses": expenses,
-            "transfers": transfers,
+            "balance": float(opening + income - expenses),
+            "income": float(income),
+            "expenses": float(expenses),
+            "transfers": float(transfers),
             "accounts_count": Account.objects.filter(user=user, is_active=True).count(),
             "categories_count": Category.objects.filter(user=user, is_active=True).count(),
-            "transactions_count": transactions.count(),
+            "transactions_count": period_transactions.count(),
+            "period": {"date_from": start.isoformat(), "date_to": end.isoformat()},
+            "category_expenses": category_expenses,
+            "cash_flow": cash_flow,
+            "net_worth": net_worth,
         })
