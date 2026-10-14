@@ -1,69 +1,30 @@
-import { FormEvent, useState } from 'react'
+import { FormEvent, useEffect, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { useAuth } from './AuthContext'
+import { createAccount, createCategory, createTransaction, dashboard, listAccounts, listCategories, listTransactions, type Account, type Category, type DashboardData, type Transaction } from './api'
 import './styles.css'
 
 export function AuthPage() {
-  const { user, loading, signIn, signUp } = useAuth()
-  const navigate = useNavigate()
-  const [mode, setMode] = useState<'login' | 'register'>('login')
-  const [username, setUsername] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [confirm, setConfirm] = useState('')
-  const [error, setError] = useState('')
-  const [busy, setBusy] = useState(false)
-
+  const { user, loading, signIn, signUp } = useAuth(); const navigate = useNavigate()
+  const [mode, setMode] = useState<'login'|'register'>('login'); const [username,setUsername]=useState(''); const [email,setEmail]=useState(''); const [password,setPassword]=useState(''); const [confirm,setConfirm]=useState(''); const [error,setError]=useState(''); const [busy,setBusy]=useState(false)
   if (loading) return <div className="screen"><div className="loader">Carregando...</div></div>
   if (user) return <Navigate to="/dashboard" replace />
-
-  async function submit(event: FormEvent) {
-    event.preventDefault()
-    setError('')
-    setBusy(true)
-    try {
-      if (mode === 'login') await signIn(username, password)
-      else await signUp({ username, email, password, password_confirm: confirm })
-      navigate('/dashboard')
-    } catch (err: any) {
-      const data = err?.response?.data
-      setError(data ? Object.values(data).flat().join(' ') : 'Não foi possível concluir a operação.')
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  return (
-    <main className="auth-shell">
-      <section className="brand-panel">
-        <div className="brand-mark">M</div>
-        <p className="eyebrow">MYMONEY</p>
-        <h1>Seu dinheiro.<br />Sob seu controle.</h1>
-        <p className="brand-copy">Uma visão simples, segura e inteligente das suas finanças.</p>
-      </section>
-      <section className="auth-panel">
-        <div className="auth-card">
-          <div className="mobile-brand">MYMONEY</div>
-          <h2>{mode === 'login' ? 'Bem-vindo de volta' : 'Criar sua conta'}</h2>
-          <p className="muted">{mode === 'login' ? 'Entre para acessar seu painel financeiro.' : 'Comece a organizar suas finanças.'}</p>
-          <form onSubmit={submit}>
-            <label>Usuário<input value={username} onChange={e => setUsername(e.target.value)} autoComplete="username" required /></label>
-            {mode === 'register' && <label>E-mail<input type="email" value={email} onChange={e => setEmail(e.target.value)} autoComplete="email" required /></label>}
-            <label>Senha<input type="password" value={password} onChange={e => setPassword(e.target.value)} autoComplete={mode === 'login' ? 'current-password' : 'new-password'} required minLength={8} /></label>
-            {mode === 'register' && <label>Confirme a senha<input type="password" value={confirm} onChange={e => setConfirm(e.target.value)} autoComplete="new-password" required minLength={8} /></label>}
-            {error && <div className="error">{error}</div>}
-            <button disabled={busy}>{busy ? 'Aguarde...' : mode === 'login' ? 'Entrar' : 'Criar conta'}</button>
-          </form>
-          <button className="link-button" onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setError('') }}>
-            {mode === 'login' ? 'Ainda não tenho uma conta' : 'Já tenho uma conta'}
-          </button>
-        </div>
-      </section>
-    </main>
-  )
+  async function submit(event: FormEvent) { event.preventDefault(); setError(''); setBusy(true); try { if(mode==='login') await signIn(username,password); else await signUp({username,email,password,password_confirm:confirm} as any); navigate('/dashboard') } catch(err:any) { const data=err?.response?.data; setError(data ? Object.values(data).flat().join(' ') : 'Não foi possível concluir a operação.') } finally { setBusy(false) } }
+  return <main className="auth-shell"><section className="brand-panel"><div className="brand-mark">M</div><p className="eyebrow">MYMONEY</p><h1>Seu dinheiro.<br/>Sob seu controle.</h1><p className="brand-copy">Uma visão simples, segura e inteligente das suas finanças.</p></section><section className="auth-panel"><div className="auth-card"><div className="mobile-brand">MYMONEY</div><h2>{mode==='login'?'Bem-vindo de volta':'Criar sua conta'}</h2><p className="muted">{mode==='login'?'Entre para acessar seu painel financeiro.':'Comece a organizar suas finanças.'}</p><form onSubmit={submit}><label>Usuário<input value={username} onChange={e=>setUsername(e.target.value)} required /></label>{mode==='register'&&<label>E-mail<input type="email" value={email} onChange={e=>setEmail(e.target.value)} required /></label>}<label>Senha<input type="password" value={password} onChange={e=>setPassword(e.target.value)} minLength={8} required /></label>{mode==='register'&&<label>Confirme a senha<input type="password" value={confirm} onChange={e=>setConfirm(e.target.value)} minLength={8} required /></label>}{error&&<div className="error">{error}</div>}<button disabled={busy}>{busy?'Aguarde...':mode==='login'?'Entrar':'Criar conta'}</button></form><button className="link-button" onClick={()=>{setMode(mode==='login'?'register':'login');setError('')}}>{mode==='login'?'Ainda não tenho uma conta':'Já tenho uma conta'}</button></div></section></main>
 }
+
+function money(value: number|string) { return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(Number(value)||0) }
 
 export function Dashboard() {
-  const { user, signOut } = useAuth()
-  return <main className="dashboard"><header><div><span className="eyebrow">MYMONEY</span><h1>Olá, {user?.first_name || user?.username} 👋</h1></div><button className="secondary" onClick={signOut}>Sair</button></header><section className="welcome"><p className="eyebrow">PAINEL FINANCEIRO</p><h2>Seu espaço financeiro está pronto.</h2><p>A autenticação foi concluída com sucesso. Os módulos de contas, categorias, transações e dashboard entram nas próximas sprints.</p></section></main>
+  const { user, signOut } = useAuth(); const [data,setData]=useState<DashboardData|null>(null); const [accounts,setAccounts]=useState<Account[]>([]); const [categories,setCategories]=useState<Category[]>([]); const [transactions,setTransactions]=useState<Transaction[]>([]); const [error,setError]=useState(''); const [showAccount,setShowAccount]=useState(false); const [showCategory,setShowCategory]=useState(false); const [showTransaction,setShowTransaction]=useState(false)
+  async function load() { try { const [d,a,c,t]=await Promise.all([dashboard(),listAccounts(),listCategories(),listTransactions()]); setData(d);setAccounts(a);setCategories(c);setTransactions(t) } catch { setError('Não foi possível carregar os dados financeiros.') } }
+  useEffect(()=>{load()},[])
+  async function submitAccount(e:FormEvent<HTMLFormElement>){e.preventDefault();const f=new FormData(e.currentTarget);await createAccount({name:String(f.get('name')),institution:String(f.get('institution')||''),account_type:String(f.get('account_type')),opening_balance:String(f.get('opening_balance')||'0')});e.currentTarget.reset();setShowAccount(false);load()}
+  async function submitCategory(e:FormEvent<HTMLFormElement>){e.preventDefault();const f=new FormData(e.currentTarget);await createCategory({name:String(f.get('name')),category_type:String(f.get('category_type')) as any});e.currentTarget.reset();setShowCategory(false);load()}
+  async function submitTransaction(e:FormEvent<HTMLFormElement>){e.preventDefault();const f=new FormData(e.currentTarget);await createTransaction({account:String(f.get('account')),category:f.get('category')?String(f.get('category')):null,transaction_type:String(f.get('transaction_type')) as any,description:String(f.get('description')),amount:String(f.get('amount')),transaction_date:String(f.get('transaction_date'))});e.currentTarget.reset();setShowTransaction(false);load()}
+  return <main className="dashboard"><header><div><span className="eyebrow">MYMONEY · PAINEL</span><h1>Olá, {user?.first_name||user?.username} 👋</h1></div><button className="secondary" onClick={signOut}>Sair</button></header>{error&&<div className="error page-error">{error}</div>}<section className="metrics"><Metric title="Saldo" value={money(data?.balance||0)}/><Metric title="Receitas" value={money(data?.income||0)} positive/><Metric title="Despesas" value={money(data?.expenses||0)}/><Metric title="Transações" value={String(data?.transactions_count||0)}/></section><div className="actions"><button onClick={()=>setShowAccount(true)}>+ Nova conta</button><button onClick={()=>setShowCategory(true)}>+ Nova categoria</button><button onClick={()=>setShowTransaction(true)}>+ Nova transação</button></div><section className="grid"><Panel title="Contas"><div className="list">{accounts.length?accounts.map(a=><div className="row" key={a.id}><div><strong>{a.name}</strong><small>{a.institution||a.account_type}</small></div><strong>{money(a.balance)}</strong></div>):<Empty text="Nenhuma conta cadastrada."/>}</div></Panel><Panel title="Últimas transações"><div className="list">{transactions.slice(0,8).map(t=><div className="row" key={t.id}><div><strong>{t.description}</strong><small>{t.category_name||'Transferência'} · {t.transaction_date}</small></div><strong className={t.transaction_type==='EXPENSE'?'expense':'income'}>{t.transaction_type==='EXPENSE'?'-':'+'}{money(t.amount)}</strong></div>)}{!transactions.length&&<Empty text="Nenhuma transação cadastrada."/>}</div></Panel></section>{showAccount&&<Modal title="Nova conta" onClose={()=>setShowAccount(false)}><form onSubmit={submitAccount} className="modal-form"><input name="name" placeholder="Nome da conta" required/><input name="institution" placeholder="Instituição"/><select name="account_type"><option value="CHECKING">Conta corrente</option><option value="SAVINGS">Poupança</option><option value="CREDIT_CARD">Cartão de crédito</option><option value="CASH">Dinheiro</option><option value="INVESTMENT">Investimento</option></select><input name="opening_balance" type="number" step="0.01" placeholder="Saldo inicial"/><button>Salvar conta</button></form></Modal>}{showCategory&&<Modal title="Nova categoria" onClose={()=>setShowCategory(false)}><form onSubmit={submitCategory} className="modal-form"><input name="name" placeholder="Nome da categoria" required/><select name="category_type"><option value="EXPENSE">Despesa</option><option value="INCOME">Receita</option></select><button>Salvar categoria</button></form></Modal>}{showTransaction&&<Modal title="Nova transação" onClose={()=>setShowTransaction(false)}><form onSubmit={submitTransaction} className="modal-form"><input name="description" placeholder="Descrição" required/><select name="transaction_type"><option value="EXPENSE">Despesa</option><option value="INCOME">Receita</option></select><select name="account" required><option value="">Conta</option>{accounts.map(a=><option value={a.id} key={a.id}>{a.name}</option>)}</select><select name="category"><option value="">Categoria</option>{categories.map(c=><option value={c.id} key={c.id}>{c.name}</option>)}</select><input name="amount" type="number" step="0.01" min="0.01" placeholder="Valor" required/><input name="transaction_date" type="date" required/><button>Salvar transação</button></form></Modal>}</main>
 }
+function Metric({title,value,positive=false}:{title:string;value:string;positive?:boolean}){return <article className="metric"><span>{title}</span><strong className={positive?'income':''}>{value}</strong></article>}
+function Panel({title,children}:{title:string;children:React.ReactNode}){return <article className="panel"><h3>{title}</h3>{children}</article>}
+function Empty({text}:{text:string}){return <p className="empty">{text}</p>}
+function Modal({title,onClose,children}:{title:string;onClose:()=>void;children:React.ReactNode}){return <div className="overlay"><div className="modal"><div className="modal-head"><h2>{title}</h2><button className="close" onClick={onClose}>×</button></div>{children}</div></div>}
