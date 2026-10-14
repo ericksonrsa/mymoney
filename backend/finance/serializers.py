@@ -40,10 +40,11 @@ class TransactionSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         request = self.context["request"]
         user = request.user
-        account = attrs.get("account")
-        destination = attrs.get("destination_account")
-        category = attrs.get("category")
-        transaction_type = attrs.get("transaction_type")
+        existing = self.instance
+        account = attrs.get("account", existing.account if existing else None)
+        destination = attrs.get("destination_account", existing.destination_account if existing else None)
+        category = attrs.get("category", existing.category if existing else None)
+        transaction_type = attrs.get("transaction_type", existing.transaction_type if existing else None)
         if account and account.user_id != user.id:
             raise serializers.ValidationError({"account": "Conta não pertence ao usuário autenticado."})
         if destination and destination.user_id != user.id:
