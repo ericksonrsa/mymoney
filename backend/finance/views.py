@@ -66,6 +66,17 @@ class TransactionListCreateView(UserOwnedMixin, generics.ListCreateAPIView):
             queryset = queryset.filter(transaction_date__gte=params["date_from"])
         if params.get("date_to"):
             queryset = queryset.filter(transaction_date__lte=params["date_to"])
+        if params.get("q"):
+            term = params["q"].strip()
+            queryset = queryset.filter(Q(description__icontains=term) | Q(notes__icontains=term))
+        if params.get("amount_min"):
+            queryset = queryset.filter(amount__gte=params["amount_min"])
+        if params.get("amount_max"):
+            queryset = queryset.filter(amount__lte=params["amount_max"])
+        ordering = params.get("ordering", "-transaction_date,-created_at")
+        allowed = {"transaction_date", "-transaction_date", "amount", "-amount", "created_at", "-created_at"}
+        ordering_fields = [field for field in ordering.split(",") if field in allowed]
+        queryset = queryset.order_by(*(ordering_fields or ["-transaction_date", "-created_at"]))
         return queryset
 
     def perform_create(self, serializer):
