@@ -30,3 +30,44 @@ export async function updateTransaction(id: string, payload: Partial<Transaction
 export async function deleteTransaction(id: string) { await api.delete(`/finance/transactions/${id}/`) }
 export async function dashboard(params?: { date_from?: string; date_to?: string }) { const { data } = await api.get<DashboardData>('/finance/dashboard/', { params }); return data }
 export function logout() { tokenStore.set(null); sessionStorage.removeItem('mymoney_refresh_token') }
+
+
+export type NotificationItem = {
+  id: string
+  notification_type: string
+  severity: 'INFO' | 'WARNING' | 'CRITICAL'
+  title: string
+  message: string
+  is_read: boolean
+  created_at: string
+  metadata: Record<string, unknown>
+}
+export type NotificationResponse = { unread_count: number; results: NotificationItem[] }
+export type FinancialInsights = {
+  month: string
+  summary: {
+    income: string; expenses: string; net: string
+    previous_income: string; previous_expenses: string
+    income_change_percent: number | null; expense_change_percent: number | null
+  }
+  top_expense_categories: { category_id: string | null; category: string; amount: string }[]
+  budgets: { id: string; category: string; amount: string; spent: string; remaining: string; percentage: number }[]
+  goals: { id: string; name: string; target_amount: string; current_amount: string; percentage: number; target_date: string | null }[]
+  upcoming_recurring: { id: string; description: string; amount: string; next_run: string; account: string }[]
+}
+export async function listNotifications(unread = false) {
+  const { data } = await api.get<NotificationResponse>('/finance/notifications/', { params: unread ? { unread: 'true' } : undefined })
+  return data
+}
+export async function markNotificationRead(id: string, is_read = true) {
+  const { data } = await api.patch<{ id: string; is_read: boolean }>(`/finance/notifications/${id}/read/`, { is_read })
+  return data
+}
+export async function generateNotifications() {
+  const { data } = await api.post<{ created: number; unread_count: number }>('/finance/notifications/generate/')
+  return data
+}
+export async function getFinancialInsights(month?: string) {
+  const { data } = await api.get<FinancialInsights>('/finance/insights/', { params: month ? { month } : undefined })
+  return data
+}
