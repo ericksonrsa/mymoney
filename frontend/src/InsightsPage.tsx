@@ -9,7 +9,7 @@ function money(value: string | number) {
 }
 function monthStart() {
   const d = new Date()
-  return new Date(d.getFullYear(), d.getMonth(), 1).toISOString().slice(0, 10)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`
 }
 function monthTitle(value: string) {
   return new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' }).format(new Date(`${value.slice(0, 7)}-02T12:00:00`))
@@ -17,10 +17,6 @@ function monthTitle(value: string) {
 function percent(value: number | null) {
   if (value === null) return 'Sem base anterior'
   return `${value > 0 ? '+' : ''}${value.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`
-}
-function changeTone(value: number | null, expenses = false) {
-  if (value === null || value === 0) return ''
-  return (expenses ? value < 0 : value > 0) ? 'income' : 'expense'
 }
 
 export function InsightsPage() {
