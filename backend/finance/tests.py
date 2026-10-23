@@ -51,3 +51,51 @@ class FinanceApiTests(APITestCase):
         response = self.client.get(reverse("finance-dashboard"))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["balance"], 900)
+
+    def test_dashboard_returns_category_cashflow_and_net_worth_series(self):
+        income_category = Category.objects.create(user=self.user, name="Salário", category_type="INCOME")
+        Transaction.objects.create(
+            user=self.user, account=self.account, category=income_category,
+            transaction_type="INCOME", description="Salário", amount=Decimal("5000"),
+            transaction_date=date(2026, 10, 5),
+        )
+        Transaction.objects.create(
+            user=self.user, account=self.account, category=self.category,
+            transaction_type="EXPENSE", description="Mercado", amount=Decimal("750"),
+            transaction_date=date(2026, 10, 10),
+        )
+
+        response = self.client.get(reverse("finance-dashboard"), {
+            "date_from": "2026-10-01", "date_to": "2026-10-31",
+        })
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["income"], 5000)
+        self.assertEqual(response.data["expenses"], 750)
+        self.assertEqual(response.data["balance"], 5250)
+        self.assertEqual(response.data["category_expenses"], [{"category": "Alimentação", "amount": 750.0}])
+        self.assertEqual(response.data["cash_flow"], [{
+            "month": "2026-10", "income": 5000.0, "expenses": 750.0, "net": 4250.0,
+        }])
+        self.assertEqual(response.data["net_worth"], [{"month": "2026-10", "value": 5250.0}])
+
+    def test_dashboard_honors_date_range(self):
+        Transaction.objects.create(
+            user=self.user, account=self.account, category=self.category,
+            transaction_type="EXPENSE", description="Previous month", amount=Decimal("200"),
+            transaction_date=date(2026, 9, 30),
+        )
+        Transaction.objects.create(
+            user=self.user, account=self.account, category=self.category,
+            transaction_type="EXPENSE", description="Current month", amount=Decimal("100"),
+            transaction_date=date(2026, 10, 2),
+        )
+
+        response = self.client.get(reverse("finance-dashboard"), {
+            "date_from": "2026-10-01", "date_to": "2026-10-31",
+        })
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["expenses"], 100)
+        self.assertEqual(response.data["transactions_count"], 1)
+        self.assertEqual(response.data["category_expenses"], [{"category": "Alimentação", "amount": 100.0}])
