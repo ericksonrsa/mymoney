@@ -73,3 +73,26 @@ class ImportBatch(models.Model):
 class ImportRow(models.Model):
     batch = models.ForeignKey(ImportBatch, on_delete=models.CASCADE, related_name="rows"); transaction_date = models.DateField(); description = models.CharField(max_length=200); amount = models.DecimalField(max_digits=14, decimal_places=2); transaction_type = models.CharField(max_length=10, choices=[("INCOME","Receita"),("EXPENSE","Despesa")]); fingerprint = models.CharField(max_length=64); status = models.CharField(max_length=12, default="PENDING"); transaction = models.OneToOneField(Transaction, on_delete=models.SET_NULL, null=True, blank=True, related_name="import_row"); error = models.CharField(max_length=255, blank=True)
     class Meta: constraints=[models.UniqueConstraint(fields=["batch","fingerprint"],name="unique_import_row_fingerprint")]; indexes=[models.Index(fields=["batch","fingerprint"])]
+
+
+class CategorizationRule(models.Model):
+    class MatchField(models.TextChoices):
+        DESCRIPTION = "DESCRIPTION", "Descrição"
+        NOTES = "NOTES", "Observações"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="categorization_rules")
+    name = models.CharField(max_length=120)
+    pattern = models.CharField(max_length=160, help_text="Texto literal a procurar, sem expressões regulares.")
+    match_field = models.CharField(max_length=12, choices=MatchField.choices, default=MatchField.DESCRIPTION)
+    category = models.ForeignKey(Category, on_delete=models.PROTECT, related_name="categorization_rules")
+    priority = models.PositiveSmallIntegerField(default=100, help_text="Número menor é aplicado primeiro.")
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["priority", "name"]
+        indexes = [models.Index(fields=["user", "is_active", "priority"])]
+        constraints = [models.UniqueConstraint(fields=["user", "name"], name="unique_categorization_rule_name")]
+

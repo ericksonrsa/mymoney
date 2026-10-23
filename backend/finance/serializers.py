@@ -77,3 +77,32 @@ class ImportBatchSerializer(serializers.ModelSerializer):
     def validate_account(self,value):
         if value.user_id!=self.context["request"].user.id: raise serializers.ValidationError("Conta não pertence ao usuário autenticado.")
         return value
+
+
+class CategorizationRuleSerializer(serializers.ModelSerializer):
+    category_name = serializers.CharField(source="category.name", read_only=True)
+
+    class Meta:
+        from .models import CategorizationRule
+        model = CategorizationRule
+        fields = ("id", "name", "pattern", "match_field", "category", "category_name", "priority", "is_active", "created_at", "updated_at")
+        read_only_fields = ("id", "category_name", "created_at", "updated_at")
+
+    def validate(self, attrs):
+        from .models import CategorizationRule
+        user = self.context["request"].user
+        category = attrs.get("category", self.instance.category if self.instance else None)
+        pattern = attrs.get("pattern", self.instance.pattern if self.instance else "")
+        name = attrs.get("name", self.instance.name if self.instance else "")
+        if category and category.user_id != user.id:
+            raise serializers.ValidationError({"category": "Categoria não pertence ao usuário autenticado."})
+        if category and category.category_type not in ("INCOME", "EXPENSE"):
+            raise serializers.ValidationError({"category": "A categoria deve ser de receita ou despesa."})
+        if not pattern.strip():
+            raise serializers.ValidationError({"pattern": "Informe um texto para correspondência."})
+        qs = CategorizationRule.objects.filter(user=user, name=name)
+        if self.instance:
+            qs = qs.exclude(pk=self.instance.pk)
+        if name and qs.exists():
+            raise serializers.ValidationError({"name": "Já existe uma regra com esse nome."})
+        return attrs
