@@ -90,3 +90,38 @@ export async function createRecurring(payload: Partial<RecurringTransaction>) { 
 export async function updateRecurring(id: string, payload: Partial<RecurringTransaction>) { const { data } = await api.patch<RecurringTransaction>(`/finance/recurring/${id}/`, payload); return data }
 export async function deleteRecurring(id: string) { await api.delete(`/finance/recurring/${id}/`) }
 export async function generateRecurring() { const { data } = await api.post<{ created: number; transactions: string[] }>('/finance/recurring/generate/'); return data }
+
+
+// Sprint 12 — consolidated invoices/statements
+export type Invoice = {
+  id: string
+  title: string
+  period_start: string
+  period_end: string
+  due_date: string | null
+  status: 'OPEN' | 'PAID' | 'CANCELLED'
+  notes: string
+  transactions: string[]
+  transaction_items: Transaction[]
+  credit_total: string
+  debit_total: string
+  net_total: string
+  transaction_count: number
+  created_at: string
+  updated_at: string
+}
+export async function listInvoices(status?: string) {
+  const { data } = await api.get<Invoice[]>('/finance/invoices/', { params: status ? { status } : undefined })
+  return data
+}
+export async function createInvoice(payload: { title: string; period_start: string; period_end: string; due_date: string | null; notes?: string; transactions: string[] }) {
+  const { data } = await api.post<Invoice>('/finance/invoices/', payload)
+  return data
+}
+export async function updateInvoice(id: string, payload: Partial<Pick<Invoice, 'title' | 'period_start' | 'period_end' | 'due_date' | 'status' | 'notes' | 'transactions'>>) {
+  const { data } = await api.patch<Invoice>(`/finance/invoices/${id}/`, payload)
+  return data
+}
+export async function deleteInvoice(id: string) {
+  await api.delete(`/finance/invoices/${id}/`)
+}
