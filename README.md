@@ -82,42 +82,48 @@ A especificação completa está em [`docs/SPRINT-03.md`](docs/SPRINT-03.md).
 
 O Sprint 04 transforma o lançamento de movimentações em uma experiência operacional completa:
 
-### Backend
-
-- Busca textual por descrição e observações com `q`.
-- Filtros por tipo, conta, categoria e período.
-- Filtros por valor mínimo e máximo.
-- Ordenação controlada por data, valor e criação.
-- Endpoints existentes de edição e exclusão de transações utilizados pelo frontend.
-- Isolamento por usuário mantido em todas as consultas e operações.
-
-### Frontend
-
-- Pesquisa de movimentações.
-- Filtros combináveis por período, tipo, conta, categoria e faixa de valor.
-- Paginação da lista de movimentações.
-- Edição de transações existentes.
-- Exclusão com confirmação.
-- Criação de transferências entre contas.
-- Formulário de movimentação com observações.
-- Diferenciação visual entre receitas, despesas e transferências.
-- Interface responsiva para desktop e telas menores.
-
-### API — novos filtros
-
-`GET /api/finance/transactions/` aceita:
-
-- `q`
-- `type`
-- `account`
-- `category`
-- `date_from`
-- `date_to`
-- `amount_min`
-- `amount_max`
-- `ordering`
+- Busca textual por descrição e observações.
+- Filtros combináveis por período, tipo, conta, categoria e valor.
+- Ordenação controlada.
+- Paginação, edição e exclusão no frontend.
+- Transferências entre contas.
+- Interface responsiva.
 
 A especificação completa está em [`docs/SPRINT-04.md`](docs/SPRINT-04.md).
+
+## Sprint 05 — Budgets & Financial Goals
+
+O Sprint 05 adiciona a camada de planejamento financeiro:
+
+### Orçamentos
+
+- Orçamento mensal por categoria de despesa.
+- Cálculo automático do gasto real a partir das transações.
+- Valor restante e percentual consumido.
+- Filtro por mês.
+- Edição e exclusão.
+- Unicidade por usuário, categoria e mês.
+
+### Metas financeiras
+
+- Valor objetivo e valor acumulado.
+- Percentual de progresso.
+- Valor restante.
+- Data-alvo opcional.
+- Observações e status ativo/inativo.
+- Edição e exclusão.
+- Isolamento por usuário.
+
+### API
+
+| Método | Endpoint | Finalidade |
+|---|---|---|
+| GET/POST | `/api/finance/budgets/` | Listar/criar orçamentos |
+| GET/PATCH/DELETE | `/api/finance/budgets/<uuid>/` | Gerenciar orçamento |
+| GET/POST | `/api/finance/goals/` | Listar/criar metas |
+| GET/PATCH/DELETE | `/api/finance/goals/<uuid>/` | Gerenciar meta |
+
+A especificação completa está em [`docs/SPRINT-05.md`](docs/SPRINT-05.md).
 
 ### Configuração local
 
