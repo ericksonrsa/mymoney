@@ -14,6 +14,7 @@ Sistema de controle financeiro pessoal desenvolvido com Django (backend), Postgr
 - **Sprint 07** — regras de categorização inteligente e reconciliação bancária.
 - **Sprint 08** — notificações persistentes e insights financeiros mensais.
 - **Sprint 09** — integração visual de notificações e insights no frontend React.
+- **Sprint 10** — telas de gestão de orçamentos, metas financeiras e transações recorrentes.
 
 A documentação detalhada de cada sprint está em `docs/`.
 

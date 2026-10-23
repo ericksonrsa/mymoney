@@ -45,3 +45,39 @@
 .insights-footnote{font-size:12px;color:#64748b;line-height:1.6;margin-top:20px}
 @media(max-width:900px){.insights-grid{grid-template-columns:1fr}.header-actions{justify-content:flex-end}.notification-title{flex-direction:column}.notification-actions{width:100%}}
 @media(max-width:600px){.dashboard{padding:24px 16px}.dashboard header{align-items:flex-start;gap:16px}.dashboard h1{font-size:27px}.header-actions{flex-direction:column;align-items:stretch}.notification-item{flex-wrap:wrap}.notification-read{margin-left:20px}.budget-values{flex-wrap:wrap}}
+
+/* Sprint 10 — financial planning management */
+.management-toolbar{justify-content:space-between;align-items:flex-end}
+.management-actions{display:flex;gap:9px;flex-wrap:wrap}
+.management-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0 20px;border-bottom:1px solid #e2e8f0;padding-bottom:10px}
+.management-tabs button{background:transparent;color:#64748b;border:1px solid transparent;display:flex;gap:8px;align-items:center}
+.management-tabs button.active{background:#ecfdf5;color:#065f46;border-color:#a7f3d0}
+.management-tabs button span{font-size:11px;background:rgba(148,163,184,.18);padding:2px 7px;border-radius:999px}
+.management-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.management-card{min-width:0;display:flex;flex-direction:column;gap:14px}
+.management-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+.management-card-head h3{margin:5px 0 0;font-size:18px}
+.management-card-head>strong{font-size:19px;white-space:nowrap}
+.management-card-head .eyebrow{font-size:10px}
+.budget-large{height:9px;margin:0}
+.management-card-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto;padding-top:3px}
+.management-note{font-size:12px;margin:0;line-height:1.5}
+.management-empty{grid-column:1/-1;text-align:center;padding:42px 24px}
+.management-empty h3{margin:12px 0 6px}
+.management-empty p{color:#64748b;font-size:13px;max-width:440px;margin:0 auto;line-height:1.6}
+.empty-icon{width:42px;height:42px;margin:auto;border-radius:14px;display:grid;place-items:center;background:#ecfdf5;color:#047857;font-size:22px}
+.recurring-sub{font-size:12px;margin:5px 0 0}
+.recurring-meta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:12px;border-radius:12px;background:#f8fafc}
+.recurring-meta span{display:grid;gap:5px;min-width:0}
+.recurring-meta small{font-size:10px;color:#64748b}
+.recurring-meta strong{font-size:12px;overflow-wrap:anywhere}
+.management-modal{width:min(560px,100%)}
+.management-modal .modal-head{align-items:flex-start}
+.management-modal .modal-head h2{font-size:21px;margin-top:6px}
+.management-modal .modal-form label{display:grid;gap:7px;color:#334155;font-size:12px;font-weight:700}
+.management-modal .modal-form label input,.management-modal .modal-form label select{width:100%;min-width:0}
+.management-form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.management-form-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:6px}
+.management-form-actions button{min-width:100px}
+@media(max-width:850px){.management-list{grid-template-columns:1fr}.management-toolbar{align-items:stretch}.management-actions{width:100%}.management-actions button{flex:1}}
+@media(max-width:560px){.management-form-row{grid-template-columns:1fr}.management-actions{flex-direction:column}.management-tabs{display:grid;grid-template-columns:1fr}.management-tabs button{justify-content:space-between}.recurring-meta{grid-template-columns:1fr 1fr}.management-card-head{gap:8px}.management-card-head>strong{font-size:16px}}

@@ -71,3 +71,22 @@ export async function getFinancialInsights(month?: string) {
   const { data } = await api.get<FinancialInsights>('/finance/insights/', { params: month ? { month } : undefined })
   return data
 }
+
+
+// Sprint 10 — budgets, goals and recurring transactions
+export type Budget = { id: string; category: string; category_name: string; month: string; amount: string; spent: string; remaining: string; percentage: number; notes: string }
+export type FinancialGoal = { id: string; name: string; target_amount: string; current_amount: string; percentage: number; remaining: string; target_date: string | null; notes: string; is_active: boolean }
+export type RecurringTransaction = { id: string; account: string; account_name: string; category: string | null; category_name: string | null; transaction_type: 'INCOME' | 'EXPENSE'; description: string; amount: string; frequency: 'WEEKLY' | 'MONTHLY' | 'YEARLY'; next_run: string; end_date: string | null; is_active: boolean; notes: string }
+export async function listBudgets(month?: string) { const { data } = await api.get<Budget[]>('/finance/budgets/', { params: month ? { month } : undefined }); return data }
+export async function createBudget(payload: Partial<Budget>) { const { data } = await api.post<Budget>('/finance/budgets/', payload); return data }
+export async function updateBudget(id: string, payload: Partial<Budget>) { const { data } = await api.patch<Budget>(`/finance/budgets/${id}/`, payload); return data }
+export async function deleteBudget(id: string) { await api.delete(`/finance/budgets/${id}/`) }
+export async function listGoals() { const { data } = await api.get<FinancialGoal[]>('/finance/goals/'); return data }
+export async function createGoal(payload: Partial<FinancialGoal>) { const { data } = await api.post<FinancialGoal>('/finance/goals/', payload); return data }
+export async function updateGoal(id: string, payload: Partial<FinancialGoal>) { const { data } = await api.patch<FinancialGoal>(`/finance/goals/${id}/`, payload); return data }
+export async function deleteGoal(id: string) { await api.delete(`/finance/goals/${id}/`) }
+export async function listRecurring() { const { data } = await api.get<RecurringTransaction[]>('/finance/recurring/'); return data }
+export async function createRecurring(payload: Partial<RecurringTransaction>) { const { data } = await api.post<RecurringTransaction>('/finance/recurring/', payload); return data }
+export async function updateRecurring(id: string, payload: Partial<RecurringTransaction>) { const { data } = await api.patch<RecurringTransaction>(`/finance/recurring/${id}/`, payload); return data }
+export async function deleteRecurring(id: string) { await api.delete(`/finance/recurring/${id}/`) }
+export async function generateRecurring() { const { data } = await api.post<{ created: number; transactions: string[] }>('/finance/recurring/generate/'); return data }
