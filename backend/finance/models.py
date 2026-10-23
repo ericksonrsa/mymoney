@@ -54,7 +54,7 @@ class Transaction(models.Model):
 class Budget(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False); user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="finance_budgets"); category = models.ForeignKey(Category, on_delete=models.PROTECT, related_name="budgets"); month = models.DateField(); amount = models.DecimalField(max_digits=14, decimal_places=2, validators=[MinValueValidator(Decimal("0.01"))]); notes = models.CharField(max_length=200, blank=True); created_at = models.DateTimeField(auto_now_add=True); updated_at = models.DateTimeField(auto_now=True)
     class Meta:
-        ordering = ["-month", "category__name"]; constraints = [models.UniqueConstraint(fields=["user", "category", "month"], name="unique_budget_per_category_month")]; indexes = [models.Index(fields=["user", "month"])]
+        ordering = ["-month", "category__name"]; constraints = [models.UniqueConstraint(fields=["user", "category", "month"], name="unique_budget_per_category_month")]; indexes = [models.Index(fields=["user", "month"], name="finance_bud_user_id_5f8b32_idx")]
 
 class FinancialGoal(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False); user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="financial_goals"); name = models.CharField(max_length=120); target_amount = models.DecimalField(max_digits=14, decimal_places=2, validators=[MinValueValidator(Decimal("0.01") )]); current_amount = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal("0"), validators=[MinValueValidator(Decimal("0"))]); target_date = models.DateField(null=True, blank=True); notes = models.CharField(max_length=200, blank=True); is_active = models.BooleanField(default=True); created_at = models.DateTimeField(auto_now_add=True); updated_at = models.DateTimeField(auto_now=True)
@@ -64,7 +64,7 @@ class FinancialGoal(models.Model):
 class RecurringTransaction(models.Model):
     class Frequency(models.TextChoices): WEEKLY="WEEKLY","Semanal"; MONTHLY="MONTHLY","Mensal"; YEARLY="YEARLY","Anual"
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False); user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="recurring_transactions"); account = models.ForeignKey(Account, on_delete=models.PROTECT, related_name="recurring_transactions"); category = models.ForeignKey(Category, on_delete=models.PROTECT, null=True, blank=True, related_name="recurring_transactions"); transaction_type = models.CharField(max_length=10, choices=Transaction.TransactionType.choices); description = models.CharField(max_length=200); amount = models.DecimalField(max_digits=14, decimal_places=2, validators=[MinValueValidator(Decimal("0.01"))]); frequency = models.CharField(max_length=10, choices=Frequency.choices); next_run = models.DateField(); end_date = models.DateField(null=True, blank=True); is_active = models.BooleanField(default=True); notes = models.CharField(max_length=200, blank=True); created_at = models.DateTimeField(auto_now_add=True); updated_at = models.DateTimeField(auto_now=True)
-    class Meta: ordering=["next_run","description"]; indexes=[models.Index(fields=["user","next_run","is_active"])]
+    class Meta: ordering=["next_run","description"]; indexes=[models.Index(fields=["user","next_run","is_active"], name="finance_rec_user_id_1f5c42_idx")]
 
 class ImportBatch(models.Model):
     class Status(models.TextChoices): PREVIEW="PREVIEW","Pré-visualização"; IMPORTED="IMPORTED","Importado"; CANCELLED="CANCELLED","Cancelado"
@@ -72,7 +72,7 @@ class ImportBatch(models.Model):
 
 class ImportRow(models.Model):
     batch = models.ForeignKey(ImportBatch, on_delete=models.CASCADE, related_name="rows"); transaction_date = models.DateField(); description = models.CharField(max_length=200); amount = models.DecimalField(max_digits=14, decimal_places=2); transaction_type = models.CharField(max_length=10, choices=[("INCOME","Receita"),("EXPENSE","Despesa")]); fingerprint = models.CharField(max_length=64); status = models.CharField(max_length=12, default="PENDING"); transaction = models.OneToOneField(Transaction, on_delete=models.SET_NULL, null=True, blank=True, related_name="import_row"); error = models.CharField(max_length=255, blank=True)
-    class Meta: constraints=[models.UniqueConstraint(fields=["batch","fingerprint"],name="unique_import_row_fingerprint")]; indexes=[models.Index(fields=["batch","fingerprint"])]
+    class Meta: constraints=[models.UniqueConstraint(fields=["batch","fingerprint"],name="unique_import_row_fingerprint")]; indexes=[models.Index(fields=["batch","fingerprint"], name="finance_imp_batch_i_6a42ab_idx")]
 
 
 class CategorizationRule(models.Model):
@@ -92,7 +92,7 @@ class CategorizationRule(models.Model):
 
     class Meta:
         ordering = ["priority", "name"]
-        indexes = [models.Index(fields=["user", "is_active", "priority"])]
+        indexes = [models.Index(fields=["user", "is_active", "priority"], name="finance_cat_user_id_8a34e1_idx")]
         constraints = [models.UniqueConstraint(fields=["user", "name"], name="unique_categorization_rule_name")]
 
 class Notification(models.Model):
