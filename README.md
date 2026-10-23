@@ -62,26 +62,6 @@ O Sprint 02 entrega o primeiro domínio funcional completo do MyMoney: gestão d
 | GET/PUT/PATCH/DELETE | `/api/finance/transactions/<uuid>/` | Gerenciar transação |
 | GET | `/api/finance/dashboard/` | Resumo financeiro do usuário |
 
-### Frontend
-
-- Dashboard financeiro protegido por JWT.
-- Cards de saldo, receitas, despesas e transações.
-- Listagem de contas.
-- Listagem de transações.
-- Formulários de criação de conta, categoria e transação.
-- Filtros por período.
-- Renovação automática do access token.
-
-### Regras de negócio
-
-- Toda informação financeira pertence a um usuário autenticado.
-- Uma transação não pode utilizar conta ou categoria de outro usuário.
-- Receitas exigem categoria de receita.
-- Despesas exigem categoria de despesa.
-- Transferências exigem conta de destino do mesmo usuário e não utilizam categoria.
-- Origem e destino de uma transferência devem ser diferentes.
-- Valores das transações devem ser positivos.
-
 A especificação completa está em [`docs/SPRINT-02.md`](docs/SPRINT-02.md).
 
 ## Sprint 03 — Analytics & Dashboard
@@ -97,6 +77,47 @@ O Sprint 03 consolida a camada analítica do MyMoney:
 - Testes automatizados para agregações, isolamento de dados e filtros de período.
 
 A especificação completa está em [`docs/SPRINT-03.md`](docs/SPRINT-03.md).
+
+## Sprint 04 — Transaction Management & Advanced Filters
+
+O Sprint 04 transforma o lançamento de movimentações em uma experiência operacional completa:
+
+### Backend
+
+- Busca textual por descrição e observações com `q`.
+- Filtros por tipo, conta, categoria e período.
+- Filtros por valor mínimo e máximo.
+- Ordenação controlada por data, valor e criação.
+- Endpoints existentes de edição e exclusão de transações utilizados pelo frontend.
+- Isolamento por usuário mantido em todas as consultas e operações.
+
+### Frontend
+
+- Pesquisa de movimentações.
+- Filtros combináveis por período, tipo, conta, categoria e faixa de valor.
+- Paginação da lista de movimentações.
+- Edição de transações existentes.
+- Exclusão com confirmação.
+- Criação de transferências entre contas.
+- Formulário de movimentação com observações.
+- Diferenciação visual entre receitas, despesas e transferências.
+- Interface responsiva para desktop e telas menores.
+
+### API — novos filtros
+
+`GET /api/finance/transactions/` aceita:
+
+- `q`
+- `type`
+- `account`
+- `category`
+- `date_from`
+- `date_to`
+- `amount_min`
+- `amount_max`
+- `ordering`
+
+A especificação completa está em [`docs/SPRINT-04.md`](docs/SPRINT-04.md).
 
 ### Configuração local
 
