@@ -1,7 +1,7 @@
 from datetime import date, timedelta
 from django.db.models import Sum
 from rest_framework import serializers
-from .models import Account, Budget, Category, FinancialGoal, ImportBatch, ImportRow, RecurringTransaction, Transaction
+from .models import Account, Budget, Category, FinancialGoal, ImportBatch, ImportRow, Invoice, RecurringTransaction, Transaction
 
 class AccountSerializer(serializers.ModelSerializer):
     balance=serializers.SerializerMethodField()
@@ -106,3 +106,74 @@ class CategorizationRuleSerializer(serializers.ModelSerializer):
         if name and qs.exists():
             raise serializers.ValidationError({"name": "Já existe uma regra com esse nome."})
         return attrs
+
+
+class InvoiceSerializer(serializers.ModelSerializer):
+    transactions = serializers.PrimaryKeyRelatedField(many=True, queryset=Transaction.objects.all(), required=False)
+    transaction_items = serializers.SerializerMethodField()
+    credit_total = serializers.SerializerMethodField()
+    debit_total = serializers.SerializerMethodField()
+    net_total = serializers.SerializerMethodField()
+    transaction_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Invoice
+        fields = ("id", "title", "period_start", "period_end", "due_date", "status", "notes",
+                  "transactions", "transaction_items", "credit_total", "debit_total", "net_total",
+                  "transaction_count", "created_at", "updated_at")
+        read_only_fields = ("id", "transaction_items", "credit_total", "debit_total", "net_total",
+                            "transaction_count", "created_at", "updated_at")
+
+    def validate(self, attrs):
+        user = self.context["request"].user
+        start = attrs.get("period_start", self.instance.period_start if self.instance else None)
+        end = attrs.get("period_end", self.instance.period_end if self.instance else None)
+        if start and end and start > end:
+            raise serializers.ValidationError({"period_end": "O fim do período deve ser igual ou posterior ao início."})
+        items = attrs.get("transactions")
+        if items is not None:
+            if any(item.user_id != user.id for item in items):
+                raise serializers.ValidationError({"transactions": "Todos os lançamentos devem pertencer ao usuário autenticado."})
+            existing = Invoice.objects.filter(user=user, transactions__in=items).exclude(pk=self.instance.pk if self.instance else None).distinct()
+            if existing.exists():
+                raise serializers.ValidationError({"transactions": "Um ou mais lançamentos já pertencem a outra fatura."})
+            if any(item.transaction_type == Transaction.TransactionType.TRANSFER for item in items):
+                raise serializers.ValidationError({"transactions": "Transferências entre contas não podem compor uma fatura."})
+        return attrs
+
+    def create(self, validated_data):
+        items = validated_data.pop("transactions", [])
+        invoice = Invoice.objects.create(**validated_data)
+        invoice.transactions.set(items)
+        return invoice
+
+    def update(self, instance, validated_data):
+        items = validated_data.pop("transactions", None)
+        for key, value in validated_data.items():
+            setattr(instance, key, value)
+        instance.save()
+        if items is not None:
+            instance.transactions.set(items)
+        return instance
+
+    def _totals(self, obj):
+        items = list(obj.transactions.all())
+        credits = sum((x.amount for x in items if x.transaction_type == Transaction.TransactionType.INCOME), start=__import__("decimal").Decimal("0.00"))
+        debits = sum((x.amount for x in items if x.transaction_type == Transaction.TransactionType.EXPENSE), start=__import__("decimal").Decimal("0.00"))
+        return credits, debits
+
+    def get_credit_total(self, obj):
+        return self._totals(obj)[0]
+
+    def get_debit_total(self, obj):
+        return self._totals(obj)[1]
+
+    def get_net_total(self, obj):
+        credits, debits = self._totals(obj)
+        return debits - credits
+
+    def get_transaction_count(self, obj):
+        return obj.transactions.count()
+
+    def get_transaction_items(self, obj):
+        return TransactionSerializer(obj.transactions.select_related("account", "category").all(), many=True).data
