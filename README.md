@@ -2,130 +2,56 @@
 
 Sistema de controle financeiro pessoal desenvolvido com Django (backend), PostgreSQL, React + Vite (frontend) e Docker.
 
-## Sprint 01
+## Sprints
 
-Estrutura inicial do projeto:
+- **Sprint 01** — estrutura inicial do projeto.
+- **Sprint de Autenticação** — Django REST Framework + JWT/SimpleJWT.
+- **Sprint 02** — contas, categorias e transações.
+- **Sprint 03** — analytics e dashboard.
+- **Sprint 04** — gestão de transações e filtros avançados.
+- **Sprint 05** — orçamentos e metas financeiras.
+- **Sprint 06** — transações recorrentes e importação bancária CSV.
 
-- Arquitetura definida.
-- Organização do monorepo (`backend/` e `frontend/`).
-- Definição das funcionalidades do MVP.
-- Preparação para autenticação, contas, categorias e transações.
+A documentação detalhada de cada sprint está em `docs/`.
 
-## Sprint de Autenticação
+## Sprint 06 — Recurring Transactions & Bank Import
 
-A autenticação da API foi implementada no backend com Django REST Framework e JWT (SimpleJWT).
+O Sprint 06 adiciona automação operacional ao domínio financeiro:
 
-### Endpoints
+### Transações recorrentes
 
-| Método | Endpoint | Autenticação | Finalidade |
-|---|---|---|---|
-| POST | `/api/auth/register/` | Não | Cria usuário |
-| POST | `/api/auth/login/` | Não | Retorna access e refresh tokens |
-| POST | `/api/auth/token/refresh/` | Não | Renova o access token |
-| GET | `/api/auth/me/` | Bearer JWT | Retorna o usuário autenticado |
-
-### Segurança
-
-- Senhas são armazenadas pelo Django usando hashing; nunca são persistidas em texto puro.
-- Segredos e credenciais são fornecidos por variáveis de ambiente.
-- Access token padrão: 15 minutos.
-- Refresh token padrão: 7 dias.
-- Rotação e blacklist de refresh tokens habilitadas.
-- CORS permite explicitamente as origens configuradas.
-- `IsAuthenticated` é a permissão padrão da API.
-
-## Sprint 02 — Financial Management
-
-O Sprint 02 entrega o primeiro domínio funcional completo do MyMoney: gestão de contas, categorias e transações financeiras sobre a base de autenticação.
-
-### Backend
-
-- `Account`: contas correntes, poupança, cartão de crédito, dinheiro e investimentos.
-- `Category`: categorias de receitas e despesas.
-- `Transaction`: receitas, despesas e transferências.
-- IDs financeiros em UUID.
-- Isolamento completo por usuário autenticado.
-- Cálculo de saldo por conta.
-- Validações de integridade para contas, categorias e transferências.
-- Índices por usuário/data e usuário/tipo.
-- Restrições de unicidade por usuário.
-
-### API
-
-| Método | Endpoint | Finalidade |
-|---|---|---|
-| GET/POST | `/api/finance/accounts/` | Listar/criar contas |
-| GET/PUT/PATCH/DELETE | `/api/finance/accounts/<uuid>/` | Gerenciar conta |
-| GET/POST | `/api/finance/categories/` | Listar/criar categorias |
-| GET/PUT/PATCH/DELETE | `/api/finance/categories/<uuid>/` | Gerenciar categoria |
-| GET/POST | `/api/finance/transactions/` | Listar/criar transações |
-| GET/PUT/PATCH/DELETE | `/api/finance/transactions/<uuid>/` | Gerenciar transação |
-| GET | `/api/finance/dashboard/` | Resumo financeiro do usuário |
-
-A especificação completa está em [`docs/SPRINT-02.md`](docs/SPRINT-02.md).
-
-## Sprint 03 — Analytics & Dashboard
-
-O Sprint 03 consolida a camada analítica do MyMoney:
-
-- Filtros de período por data inicial e final.
-- Indicadores de saldo, receitas, despesas e transações.
-- Fluxo de caixa mensal com receitas, despesas e resultado líquido.
-- Gastos agrupados por categoria.
-- Evolução patrimonial mensal.
-- Componentes visuais para gráficos e distribuição de despesas.
-- Testes automatizados para agregações, isolamento de dados e filtros de período.
-
-A especificação completa está em [`docs/SPRINT-03.md`](docs/SPRINT-03.md).
-
-## Sprint 04 — Transaction Management & Advanced Filters
-
-O Sprint 04 transforma o lançamento de movimentações em uma experiência operacional completa:
-
-- Busca textual por descrição e observações.
-- Filtros combináveis por período, tipo, conta, categoria e valor.
-- Ordenação controlada.
-- Paginação, edição e exclusão no frontend.
-- Transferências entre contas.
-- Interface responsiva.
-
-A especificação completa está em [`docs/SPRINT-04.md`](docs/SPRINT-04.md).
-
-## Sprint 05 — Budgets & Financial Goals
-
-O Sprint 05 adiciona a camada de planejamento financeiro:
-
-### Orçamentos
-
-- Orçamento mensal por categoria de despesa.
-- Cálculo automático do gasto real a partir das transações.
-- Valor restante e percentual consumido.
-- Filtro por mês.
-- Edição e exclusão.
-- Unicidade por usuário, categoria e mês.
-
-### Metas financeiras
-
-- Valor objetivo e valor acumulado.
-- Percentual de progresso.
-- Valor restante.
-- Data-alvo opcional.
-- Observações e status ativo/inativo.
-- Edição e exclusão.
+- Frequências semanal, mensal e anual.
+- Próxima execução e data final opcional.
+- Geração idempotente de lançamentos vencidos.
+- Desativação automática ao fim da série.
 - Isolamento por usuário.
 
-### API
+### Importação bancária CSV
+
+- Upload de CSV UTF-8.
+- Delimitadores `,`, `;` e tabulação.
+- Cabeçalhos em português e inglês para data, descrição, valor e tipo.
+- Decimal com `,` ou `.`.
+- Pré-visualização antes da confirmação.
+- Detecção de duplicidades.
+- Confirmação atômica.
+- Auditoria por lote e linha de importação.
+- Associação automática à primeira categoria ativa compatível.
+
+### API — Sprint 06
 
 | Método | Endpoint | Finalidade |
 |---|---|---|
-| GET/POST | `/api/finance/budgets/` | Listar/criar orçamentos |
-| GET/PATCH/DELETE | `/api/finance/budgets/<uuid>/` | Gerenciar orçamento |
-| GET/POST | `/api/finance/goals/` | Listar/criar metas |
-| GET/PATCH/DELETE | `/api/finance/goals/<uuid>/` | Gerenciar meta |
+| GET/POST | `/api/finance/recurring/` | Listar/criar recorrência |
+| GET/PATCH/DELETE | `/api/finance/recurring/<uuid>/` | Gerenciar recorrência |
+| POST | `/api/finance/recurring/generate/` | Gerar lançamentos vencidos |
+| GET | `/api/finance/imports/` | Listar lotes de importação |
+| POST multipart | `/api/finance/imports/upload/` | Upload e pré-visualização CSV |
+| POST | `/api/finance/imports/<uuid>/confirm/` | Confirmar importação |
 
-A especificação completa está em [`docs/SPRINT-05.md`](docs/SPRINT-05.md).
+A especificação completa está em [`docs/SPRINT-06.md`](docs/SPRINT-06.md).
 
-### Configuração local
+## Configuração local
 
 ```bash
 cd backend
