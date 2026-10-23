@@ -79,6 +79,20 @@ O React/Vite agora possui:
 - Formulários de criação de conta, categoria e transação.
 - Renovação automática do access token.
 
+## Sprint 03 — Analytics & Dashboard
+
+O Sprint 03 consolida a camada analítica do MyMoney:
+
+- Filtros de período por data inicial e final.
+- Indicadores de saldo, receitas, despesas e transações.
+- Fluxo de caixa mensal com receitas, despesas e resultado líquido.
+- Gastos agrupados por categoria.
+- Evolução patrimonial mensal.
+- Componentes visuais para gráficos e distribuição de despesas.
+- Testes automatizados para agregações, isolamento de dados e filtros de período.
+
+A especificação completa está em [`docs/SPRINT-03.md`](docs/SPRINT-03.md).
+
 ### Configuração local
 
 ```bash
