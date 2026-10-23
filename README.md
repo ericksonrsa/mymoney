@@ -11,6 +11,7 @@ Sistema de controle financeiro pessoal desenvolvido com Django (backend), Postgr
 - **Sprint 04** — gestão de transações e filtros avançados.
 - **Sprint 05** — orçamentos e metas financeiras.
 - **Sprint 06** — transações recorrentes e importação bancária CSV.
+- **Sprint 07** — regras de categorização inteligente e reconciliação bancária.
 
 A documentação detalhada de cada sprint está em `docs/`.
 
@@ -81,3 +82,25 @@ Não coloque valores reais de produção no repositório. Copie `.env.example` p
 cd backend
 python manage.py test accounts finance
 ```
+
+## Sprint 07 — Intelligent Categorization & Reconciliation
+
+O Sprint 07 adiciona regras explícitas, auditáveis e determinísticas para sugerir categorias e facilitar a conferência de extratos:
+
+- Regras por trecho literal na descrição ou observações, sem execução de regex.
+- Prioridade configurável (menor número tem precedência).
+- Validação de propriedade e tipo da categoria.
+- Prévia de reconciliação com correspondências exatas e possíveis candidatas por data/valor.
+- Confirmação inteligente de importação, com categoria encontrada por regra e fallback para categoria ativa compatível.
+- Isolamento por usuário e processamento atômico.
+
+### API — Sprint 07
+
+| Método | Endpoint | Finalidade |
+|---|---|---|
+| GET/POST | `/api/finance/categorization/rules/` | Listar/criar regras |
+| GET/PATCH/DELETE | `/api/finance/categorization/rules/<uuid>/` | Gerenciar regra |
+| GET | `/api/finance/imports/<uuid>/reconcile/` | Prévia de reconciliação |
+| POST | `/api/finance/imports/<uuid>/confirm-smart/` | Confirmar lote com regras |
+
+A especificação completa está em [`docs/SPRINT-07.md`](docs/SPRINT-07.md).
