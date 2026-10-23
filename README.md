@@ -13,6 +13,7 @@ Sistema de controle financeiro pessoal desenvolvido com Django (backend), Postgr
 - **Sprint 06** — transações recorrentes e importação bancária CSV.
 - **Sprint 07** — regras de categorização inteligente e reconciliação bancária.
 - **Sprint 08** — notificações persistentes e insights financeiros mensais.
+- **Sprint 09** — integração visual de notificações e insights no frontend React.
 
 A documentação detalhada de cada sprint está em `docs/`.
 
@@ -123,3 +124,13 @@ A especificação completa está em [`docs/SPRINT-07.md`](docs/SPRINT-07.md).
 | GET | `/api/finance/insights/` | Consultar insights do mês |
 
 Detalhes em [`docs/SPRINT-08.md`](docs/SPRINT-08.md).
+
+
+## Sprint 09 — Dashboard & Notification Center
+
+- Central de notificações integrada ao dashboard, com contagem de não lidas, filtros e ação para marcar como lida.
+- Ação para solicitar geração de alertas financeiros, usando os endpoints do Sprint 08.
+- Página de insights financeiros com seleção de mês, receitas, despesas, resultado líquido, variação mensal, categorias, orçamento, metas e lançamentos recorrentes próximos.
+- Navegação entre o dashboard e os insights; estados de carregamento, erros e telas vazias.
+
+Detalhes em [`docs/SPRINT-09.md`](docs/SPRINT-09.md).
