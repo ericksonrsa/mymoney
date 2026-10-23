@@ -34,18 +34,21 @@ A autenticação da API foi implementada no backend com Django REST Framework e 
 - CORS permite explicitamente as origens configuradas.
 - `IsAuthenticated` é a permissão padrão da API.
 
-## Sprint de Gestão Financeira
+## Sprint 02 — Financial Management
 
-Implementada a primeira camada funcional de gestão financeira, com isolamento completo por usuário.
+O Sprint 02 entrega o primeiro domínio funcional completo do MyMoney: gestão de contas, categorias e transações financeiras sobre a base de autenticação.
 
-### Modelos
+### Backend
 
-- `Account`: contas bancárias, poupança, cartão, dinheiro e investimentos.
+- `Account`: contas correntes, poupança, cartão de crédito, dinheiro e investimentos.
 - `Category`: categorias de receitas e despesas.
-- `Transaction`: receitas, despesas e transferências entre contas.
-- IDs financeiros usam UUID.
-- Índices por usuário/data e usuário/tipo foram adicionados para consultas frequentes.
-- Restrições de unicidade impedem contas e categorias duplicadas dentro do mesmo usuário.
+- `Transaction`: receitas, despesas e transferências.
+- IDs financeiros em UUID.
+- Isolamento completo por usuário autenticado.
+- Cálculo de saldo por conta.
+- Validações de integridade para contas, categorias e transferências.
+- Índices por usuário/data e usuário/tipo.
+- Restrições de unicidade por usuário.
 
 ### API
 
@@ -59,25 +62,27 @@ Implementada a primeira camada funcional de gestão financeira, com isolamento c
 | GET/PUT/PATCH/DELETE | `/api/finance/transactions/<uuid>/` | Gerenciar transação |
 | GET | `/api/finance/dashboard/` | Resumo financeiro do usuário |
 
-### Regras de segurança e negócio
-
-- Todas as consultas financeiras são filtradas por `request.user`.
-- Uma transação não pode utilizar conta ou categoria de outro usuário.
-- Transferências exigem conta de destino diferente da origem.
-- Receitas e despesas exigem categoria do tipo correspondente.
-- Transferências não utilizam categoria.
-- O dashboard agrega somente dados do usuário autenticado.
-
 ### Frontend
 
-O React/Vite agora possui:
-
 - Dashboard financeiro protegido por JWT.
-- Cards de saldo, receitas, despesas e quantidade de transações.
+- Cards de saldo, receitas, despesas e transações.
 - Listagem de contas.
-- Listagem das últimas transações.
+- Listagem de transações.
 - Formulários de criação de conta, categoria e transação.
+- Filtros por período.
 - Renovação automática do access token.
+
+### Regras de negócio
+
+- Toda informação financeira pertence a um usuário autenticado.
+- Uma transação não pode utilizar conta ou categoria de outro usuário.
+- Receitas exigem categoria de receita.
+- Despesas exigem categoria de despesa.
+- Transferências exigem conta de destino do mesmo usuário e não utilizam categoria.
+- Origem e destino de uma transferência devem ser diferentes.
+- Valores das transações devem ser positivos.
+
+A especificação completa está em [`docs/SPRINT-02.md`](docs/SPRINT-02.md).
 
 ## Sprint 03 — Analytics & Dashboard
 
