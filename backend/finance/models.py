@@ -120,3 +120,29 @@ class Notification(models.Model):
         indexes = [
             models.Index(fields=["user", "is_read", "-created_at"], name="fin_notif_user_read_idx"),
         ]
+
+
+class Invoice(models.Model):
+    class Status(models.TextChoices):
+        OPEN = "OPEN", "Em aberto"
+        PAID = "PAID", "Paga"
+        CANCELLED = "CANCELLED", "Cancelada"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="finance_invoices")
+    title = models.CharField(max_length=140)
+    period_start = models.DateField()
+    period_end = models.DateField()
+    due_date = models.DateField(null=True, blank=True)
+    status = models.CharField(max_length=12, choices=Status.choices, default=Status.OPEN)
+    notes = models.CharField(max_length=300, blank=True)
+    transactions = models.ManyToManyField(Transaction, blank=True, related_name="invoices")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-period_end", "title"]
+        indexes = [models.Index(fields=["user", "status", "due_date"], name="fin_invoice_user_status_idx")]
+
+    def __str__(self):
+        return self.title
