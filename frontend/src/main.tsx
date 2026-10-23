@@ -5,6 +5,7 @@ import { AuthProvider, useAuth } from './AuthContext'
 import { AuthPage, Dashboard } from './App'
 import { InsightsPage } from './InsightsPage'
 import { ManagementPage } from './ManagementPage'
+import { InvoicePage } from './InvoicePage'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
@@ -21,6 +22,7 @@ createRoot(document.getElementById('root')!).render(
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/insights" element={<ProtectedRoute><InsightsPage /></ProtectedRoute>} />
           <Route path="/management" element={<ProtectedRoute><ManagementPage /></ProtectedRoute>} />
+          <Route path="/invoices" element={<ProtectedRoute><InvoicePage /></ProtectedRoute>} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </AuthProvider>
