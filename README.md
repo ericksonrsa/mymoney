@@ -15,7 +15,7 @@ Sistema de controle financeiro pessoal desenvolvido com Django (backend), Postgr
 - **Sprint 08** — notificações persistentes e insights financeiros mensais.
 - **Sprint 09** — integração visual de notificações e insights no frontend React.
 - **Sprint 10** — telas de gestão de orçamentos, metas financeiras e transações recorrentes.
-- **Sprint 11** — integração contínua, checagens automatizadas e testes de regressão.
+- **Sprint 11** — integração contínua, checagens automatizadas e testes de regressão.\n- **Sprint 12** — faturas consolidadas com créditos, débitos, saldo líquido e acompanhamento de status.
 
 A documentação detalhada de cada sprint está em `docs/`.
 
@@ -136,3 +136,14 @@ Detalhes em [`docs/SPRINT-08.md`](docs/SPRINT-08.md).
 - Navegação entre o dashboard e os insights; estados de carregamento, erros e telas vazias.
 
 Detalhes em [`docs/SPRINT-09.md`](docs/SPRINT-09.md).
+
+
+## Sprint 12 — Faturas consolidadas
+
+- Consolida vários lançamentos de receita/crédito e despesa/débito em uma fatura sem duplicar os lançamentos originais.
+- Apresenta total de créditos, total de débitos, saldo líquido e detalhamento dos lançamentos.
+- Permite definir período e vencimento, filtrar por status, marcar como paga/reabrir e excluir a fatura mantendo os lançamentos.
+- Aplica isolamento por usuário e validações para evitar transferências internas, lançamentos de terceiros e associação duplicada.
+- API autenticada em `/api/finance/invoices/`; tela protegida em `/invoices`.
+
+Detalhes em [`docs/SPRINT-12.md`](docs/SPRINT-12.md).
