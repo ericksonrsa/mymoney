@@ -95,3 +95,28 @@ class CategorizationRule(models.Model):
         indexes = [models.Index(fields=["user", "is_active", "priority"])]
         constraints = [models.UniqueConstraint(fields=["user", "name"], name="unique_categorization_rule_name")]
 
+class Notification(models.Model):
+    class Severity(models.TextChoices):
+        INFO = "INFO", "Informativa"
+        WARNING = "WARNING", "Atenção"
+        CRITICAL = "CRITICAL", "Crítica"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="finance_notifications")
+    notification_type = models.CharField(max_length=32)
+    severity = models.CharField(max_length=10, choices=Severity.choices, default=Severity.INFO)
+    title = models.CharField(max_length=160)
+    message = models.TextField()
+    dedupe_key = models.CharField(max_length=200)
+    metadata = models.JSONField(default=dict, blank=True)
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["is_read", "-created_at"]
+        constraints = [
+            models.UniqueConstraint(fields=["user", "dedupe_key"], name="unique_notification_dedupe_per_user"),
+        ]
+        indexes = [
+            models.Index(fields=["user", "is_read", "-created_at"], name="fin_notif_user_read_idx"),
+        ]

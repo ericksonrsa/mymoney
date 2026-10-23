@@ -12,6 +12,7 @@ Sistema de controle financeiro pessoal desenvolvido com Django (backend), Postgr
 - **Sprint 05** — orçamentos e metas financeiras.
 - **Sprint 06** — transações recorrentes e importação bancária CSV.
 - **Sprint 07** — regras de categorização inteligente e reconciliação bancária.
+- **Sprint 08** — notificações persistentes e insights financeiros mensais.
 
 A documentação detalhada de cada sprint está em `docs/`.
 
@@ -104,3 +105,21 @@ O Sprint 07 adiciona regras explícitas, auditáveis e determinísticas para sug
 | POST | `/api/finance/imports/<uuid>/confirm-smart/` | Confirmar lote com regras |
 
 A especificação completa está em [`docs/SPRINT-07.md`](docs/SPRINT-07.md).
+
+
+## Sprint 08 — Notifications & Financial Insights
+
+- Alertas idempotentes de orçamento a partir de 80% de uso.
+- Lembretes para transações recorrentes nos próximos 7 dias e metas com prazo nos próximos 30 dias.
+- Caixa de notificações com filtro de não lidas e marcação de leitura.
+- Insights mensais de receitas, despesas, saldo líquido, variação contra o mês anterior, principais categorias, orçamentos, metas e recorrências.
+- APIs autenticadas com isolamento por usuário.
+
+| Método | Endpoint | Finalidade |
+|---|---|---|
+| GET | `/api/finance/notifications/` | Listar notificações |
+| POST | `/api/finance/notifications/generate/` | Gerar alertas sem duplicidade |
+| PATCH | `/api/finance/notifications/<uuid>/read/` | Marcar como lida/não lida |
+| GET | `/api/finance/insights/` | Consultar insights do mês |
+
+Detalhes em [`docs/SPRINT-08.md`](docs/SPRINT-08.md).

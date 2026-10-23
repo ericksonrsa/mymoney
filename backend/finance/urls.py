@@ -1,4 +1,5 @@
 from django.urls import path
+from .sprint08_views import FinancialInsightsView, GenerateNotificationsView, NotificationListView, NotificationReadView
 from .sprint07_views import CategorizationRuleDetailView, CategorizationRuleListCreateView, SmartImportConfirmView, ImportReconciliationView
 from .views import (AccountDetailView,AccountListCreateView,BudgetDetailView,BudgetListCreateView,CategoryDetailView,CategoryListCreateView,DashboardView,GoalDetailView,GoalListCreateView,ImportBatchListView,ImportConfirmView,ImportUploadView,RecurringDetailView,RecurringListCreateView,GenerateRecurringView,TransactionDetailView,TransactionListCreateView)
 urlpatterns=[
@@ -13,5 +14,9 @@ urlpatterns=[
  path("categorization/rules/<uuid:pk>/",CategorizationRuleDetailView.as_view(),name="categorization-rule-detail"),
  path("imports/<uuid:pk>/reconcile/",ImportReconciliationView.as_view(),name="import-reconcile"),
  path("imports/<uuid:pk>/confirm-smart/",SmartImportConfirmView.as_view(),name="import-confirm-smart"),
+ path("notifications/", NotificationListView.as_view(), name="notification-list"),
+ path("notifications/generate/", GenerateNotificationsView.as_view(), name="notification-generate"),
+ path("notifications/<uuid:pk>/read/", NotificationReadView.as_view(), name="notification-read"),
+ path("insights/", FinancialInsightsView.as_view(), name="financial-insights"),
  path("dashboard/",DashboardView.as_view(),name="finance-dashboard"),
 ]
