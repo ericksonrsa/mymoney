@@ -30,7 +30,7 @@ Reduzir a classificação manual de transações importadas e tornar a conferên
   "is_active": true
 }
 ```
-`match_field` aceita `DESCRIPTION` ou `NOTES`. Menor `priority` é avaliada primeiro. O Sprint 07 usa texto literal, não regex.
+`match_field` aceita `DESCRIPTION`. Menor `priority` é avaliada primeiro. O Sprint 07 usa texto literal, não regex.
 
 ## Critérios de aceite
 - Regras privadas por usuário.

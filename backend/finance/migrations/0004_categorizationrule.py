@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
                 ("id", models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
                 ("name", models.CharField(max_length=120)),
                 ("pattern", models.CharField(help_text="Texto literal a procurar, sem expressões regulares.", max_length=160)),
-                ("match_field", models.CharField(choices=[("DESCRIPTION", "Descrição"), ("NOTES", "Observações")], default="DESCRIPTION", max_length=12)),
+                ("match_field", models.CharField(choices=[("DESCRIPTION", "Descrição")], default="DESCRIPTION", max_length=12)),
                 ("priority", models.PositiveSmallIntegerField(default=100, help_text="Número menor é aplicado primeiro.")),
                 ("is_active", models.BooleanField(default=True)),
                 ("created_at", models.DateTimeField(auto_now_add=True)),

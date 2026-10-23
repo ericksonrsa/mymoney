@@ -86,7 +86,7 @@ class SmartImportConfirmView(APIView):
                 for rule in rules:
                     if rule.category.category_type != row.transaction_type:
                         continue
-                    source = row.description if rule.match_field == CategorizationRule.MatchField.DESCRIPTION else ""
+                    source = row.description
                     if rule.pattern.casefold() in source.casefold():
                         category = rule.category
                         break
