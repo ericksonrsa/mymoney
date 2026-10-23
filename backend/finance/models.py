@@ -81,3 +81,36 @@ class Transaction(models.Model):
 
     def __str__(self):
         return f"{self.description} - {self.amount}"
+
+
+class Budget(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="finance_budgets")
+    category = models.ForeignKey(Category, on_delete=models.PROTECT, related_name="budgets")
+    month = models.DateField(help_text="Primeiro dia do mês de referência")
+    amount = models.DecimalField(max_digits=14, decimal_places=2, validators=[MinValueValidator(Decimal("0.01"))])
+    notes = models.CharField(max_length=200, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-month", "category__name"]
+        constraints = [models.UniqueConstraint(fields=["user", "category", "month"], name="unique_budget_per_category_month")]
+        indexes = [models.Index(fields=["user", "month"])]
+
+
+class FinancialGoal(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="financial_goals")
+    name = models.CharField(max_length=120)
+    target_amount = models.DecimalField(max_digits=14, decimal_places=2, validators=[MinValueValidator(Decimal("0.01"))])
+    current_amount = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal("0"), validators=[MinValueValidator(Decimal("0"))])
+    target_date = models.DateField(null=True, blank=True)
+    notes = models.CharField(max_length=200, blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["is_active", "target_date", "name"]
+        constraints = [models.UniqueConstraint(fields=["user", "name"], name="unique_goal_name_per_user")]
