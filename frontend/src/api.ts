@@ -11,21 +11,10 @@ export type User = { id: number; username: string; email: string; first_name: st
 export type Account = { id: string; name: string; institution: string; account_type: string; opening_balance: string; balance: string; color: string; is_active: boolean }
 export type Category = { id: string; name: string; category_type: 'INCOME' | 'EXPENSE'; icon: string; color: string; is_active: boolean }
 export type Transaction = { id: string; account: string; account_name: string; destination_account: string | null; destination_account_name: string | null; category: string | null; category_name: string | null; transaction_type: 'INCOME' | 'EXPENSE' | 'TRANSFER'; description: string; amount: string; transaction_date: string; notes: string }
-export type DashboardData = {
-  balance: number; income: number; expenses: number; transfers: number; accounts_count: number; categories_count: number; transactions_count: number;
-  period: { date_from: string; date_to: string }; category_expenses: { category: string; amount: number }[];
-  cash_flow: { month: string; income: number; expenses: number; net: number }[]; net_worth: { month: string; value: number }[]
-}
+export type DashboardData = { balance: number; income: number; expenses: number; transfers: number; accounts_count: number; categories_count: number; transactions_count: number; period: { date_from: string; date_to: string }; category_expenses: { category: string; amount: number }[]; cash_flow: { month: string; income: number; expenses: number; net: number }[]; net_worth: { month: string; value: number }[] }
 
 let refreshPromise: Promise<string | null> | null = null
-async function refreshAccessToken(): Promise<string | null> {
-  if (!refreshPromise) refreshPromise = (async () => {
-    const refresh = sessionStorage.getItem('mymoney_refresh_token'); if (!refresh) return null
-    try { const { data } = await axios.post<AuthTokens>(`${API_URL}/auth/token/refresh/`, { refresh }); tokenStore.set(data.access); if (data.refresh) sessionStorage.setItem('mymoney_refresh_token', data.refresh); return data.access }
-    catch { tokenStore.set(null); sessionStorage.removeItem('mymoney_refresh_token'); return null } finally { refreshPromise = null }
-  })()
-  return refreshPromise
-}
+async function refreshAccessToken(): Promise<string | null> { if (!refreshPromise) refreshPromise = (async () => { const refresh = sessionStorage.getItem('mymoney_refresh_token'); if (!refresh) return null; try { const { data } = await axios.post<AuthTokens>(`${API_URL}/auth/token/refresh/`, { refresh }); tokenStore.set(data.access); if (data.refresh) sessionStorage.setItem('mymoney_refresh_token', data.refresh); return data.access } catch { tokenStore.set(null); sessionStorage.removeItem('mymoney_refresh_token'); return null } finally { refreshPromise = null } })(); return refreshPromise }
 api.interceptors.response.use(r => r, async (error) => { const original = error.config; if (error.response?.status !== 401 || original?._retry) return Promise.reject(error); original._retry = true; const token = await refreshAccessToken(); if (!token) return Promise.reject(error); original.headers.Authorization = `Bearer ${token}`; return api(original) })
 
 export async function login(username: string, password: string) { const { data } = await api.post<AuthTokens>('/auth/login/', { username, password }); tokenStore.set(data.access); sessionStorage.setItem('mymoney_refresh_token', data.refresh); return data }
@@ -37,5 +26,7 @@ export async function listTransactions(params?: Record<string, string>) { const 
 export async function createAccount(payload: Partial<Account>) { const { data } = await api.post<Account>('/finance/accounts/', payload); return data }
 export async function createCategory(payload: Partial<Category>) { const { data } = await api.post<Category>('/finance/categories/', payload); return data }
 export async function createTransaction(payload: Partial<Transaction>) { const { data } = await api.post<Transaction>('/finance/transactions/', payload); return data }
+export async function updateTransaction(id: string, payload: Partial<Transaction>) { const { data } = await api.patch<Transaction>(`/finance/transactions/${id}/`, payload); return data }
+export async function deleteTransaction(id: string) { await api.delete(`/finance/transactions/${id}/`) }
 export async function dashboard(params?: { date_from?: string; date_to?: string }) { const { data } = await api.get<DashboardData>('/finance/dashboard/', { params }); return data }
 export function logout() { tokenStore.set(null); sessionStorage.removeItem('mymoney_refresh_token') }
